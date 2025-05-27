@@ -225,12 +225,14 @@ func GLVMultiply(alpha *big.Int, P *ecc.Point, params *ecc.CurveParams) *ecc.Poi
 	// A1. Search omega
 	// A2. Search lambda
 
-	//omega, lambda, _ := FindOmegaAndLambda(P, params)
-
-	//hardcoded values for omega and lambda, because my method is very slow
-	omega, _ := new(big.Int).SetString("0693b5d6484f0ab41464c9dfe60fd3f4c43d8a7f70c5b863d1c422a0e6e62b1e", 16)
-	lambda, _ := new(big.Int).SetString("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001", 16)
-
+	omega, lambda, err := FindOmegaAndLambda(P, params)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Set standart values for omega and lambda")
+		//hardcoded values for omega and lambda, because my method is very slow
+		omega, _ = new(big.Int).SetString("0693b5d6484f0ab41464c9dfe60fd3f4c43d8a7f70c5b863d1c422a0e6e62b1e", 16)
+		lambda, _ = new(big.Int).SetString("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001", 16)
+	}
 	// Search phi(P)
 	phiP := ecc.NewPoint(
 		ecc.FieldMul(P.X, omega, params.P),
