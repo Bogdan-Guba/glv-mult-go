@@ -123,4 +123,22 @@ func main() {
 	l2.Mod(l2, params.Q)
 	fmt.Printf("  [*] lambda^2 + lambda + 1 mod q = %s\n", l2.Text(16))
 
+	// Test decompose alpha
+	alpha := new(big.Int).SetInt64(1234567890)
+
+	alpha1, alpha2 := glv.DecomposeAlpha(alpha, lambda, params.Q)
+
+	lambdaAlpha2 := new(big.Int).Mul(alpha2, lambda)
+	reconstructed := new(big.Int).Add(alpha1, lambdaAlpha2)
+	reconstructed.Mod(reconstructed, params.Q)
+
+	if reconstructed.Cmp(alpha) == 0 {
+		fmt.Println("  [+] a ≡ a1 + a2·lambda mod q is verified.")
+	} else {
+		fmt.Println("  [-] a decomposition failed.")
+		fmt.Printf("      a:     %s\n", alpha.String())
+		fmt.Printf("      a1:    %s\n", alpha1.String())
+		fmt.Printf("      a2:    %s\n", alpha2.String())
+		fmt.Printf("      check: %s\n", reconstructed.String())
+	}
 }
