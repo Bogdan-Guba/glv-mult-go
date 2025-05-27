@@ -30,12 +30,3 @@ func NewBN254CurveParams() *CurveParams {
 		Q: q,
 	}
 }
-
-func GetG1BN254() *Point {
-
-	x := big.NewInt(1)
-
-	y := big.NewInt(2)
-
-	return NewPoint(x, y)
-}

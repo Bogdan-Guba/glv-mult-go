@@ -29,11 +29,9 @@ func (p *Point) IsEqual(other *Point) bool {
 
 func (p *Point) Negation(params *CurveParams) *Point {
 	if p.IsInfinity {
-		return NewPoint(nil, nil)
+		return NewInfinity()
 	}
-	negY := new(big.Int).Neg(p.Y)
-	negY.Mod(negY, params.P)
-	return NewPoint(p.X, negY)
+	return NewPoint(p.X, new(big.Int).Neg(p.Y).Mod(new(big.Int).Neg(p.Y), params.P))
 }
 
 // AddPoints
@@ -110,6 +108,11 @@ func DoublePoint(P *Point, params *CurveParams) *Point {
 
 // ScalarMult by metod of double-and-add.
 func ScalarMult(k *big.Int, P *Point, params *CurveParams) *Point {
+	if k.Sign() < 0 {
+		kAbs := new(big.Int).Neg(k)
+		res := ScalarMult(kAbs, P, params)
+		return res.Negation(params)
+	}
 	result := NewPoint(nil, nil) // init inf point
 	current := P
 
@@ -125,4 +128,16 @@ func ScalarMult(k *big.Int, P *Point, params *CurveParams) *Point {
 // create inf point
 func NewInfinity() *Point {
 	return NewPoint(nil, nil)
+}
+
+func IsOnCurve(P *Point, params *CurveParams) bool {
+	if P.IsInfinity {
+		return true
+	}
+	// y² = x³ + b
+	ySq := FieldMul(P.Y, P.Y, params.P)
+	xCube := FieldMul(P.X, P.X, params.P)
+	xCube = FieldMul(xCube, P.X, params.P)
+	xCubePlusB := FieldAdd(xCube, params.B, params.P)
+	return ySq.Cmp(xCubePlusB) == 0
 }
