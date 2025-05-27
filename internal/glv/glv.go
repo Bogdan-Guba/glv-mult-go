@@ -128,7 +128,7 @@ func DecomposeAlpha(alpha, lambda, q *big.Int) (*big.Int, *big.Int) {
 }
 
 func SimultaneousMult(k1, k2 *big.Int, P1, P2 *ecc.Point, w int, params *ecc.CurveParams) *ecc.Point {
-	// 1. Попередньо обчислити всі i*P1 + j*P2 для i, j ∈ [0, 2^w)
+
 	table := make(map[[2]int]*ecc.Point)
 	for i := 0; i < (1 << w); i++ {
 		for j := 0; j < (1 << w); j++ {
@@ -141,7 +141,7 @@ func SimultaneousMult(k1, k2 *big.Int, P1, P2 *ecc.Point, w int, params *ecc.Cur
 		}
 	}
 
-	// 2. Розбити k1, k2 на блоки довжини w
+	// 2. k1, k2 crash with block lenght w
 	bits := func(k *big.Int, w int) []int {
 		res := []int{}
 		kk := new(big.Int).Set(k)
@@ -159,14 +159,14 @@ func SimultaneousMult(k1, k2 *big.Int, P1, P2 *ecc.Point, w int, params *ecc.Cur
 		d = len(L)
 	}
 
-	// 3. Основний цикл
+	// 3. Main loop
 	R := ecc.NewInfinity()
 	for i := d - 1; i >= 0; i-- {
-		// 4.1 R ← 2^w R
+		// 4.1 R <- 2^w R
 		for j := 0; j < w; j++ {
 			R = ecc.DoublePoint(R, params)
 		}
-		// 4.2 R ← R + (Ki*P1 + Li*P2)
+		// 4.2 R <- R + (Ki*P1 + Li*P2)
 		ki, li := 0, 0
 		if i < len(K) {
 			ki = K[i]

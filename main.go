@@ -173,7 +173,7 @@ func main() {
 		fmt.Println("  [-] [0]G1 + [a2]G1 != [a2]G1: FAIL")
 	}
 
-	// [alpha1]G1 + [alpha2]phi(G1) is simple with standart method
+	// [alpha1]G1 + [alpha2]phi(G1) is similar with standart method
 
 	res4 := glv.SimultaneousMult(alpha1, alpha2, g1, phiG1, w, params)
 	expected4 := ecc.AddPoints(
