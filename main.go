@@ -113,4 +113,14 @@ func main() {
 		fmt.Println("  [-] phi(G1) is NOT on the curve!")
 	}
 
+	//test find lamda
+	lambda := glv.FindLambdaBN254(params.Q)
+	fmt.Printf("  [+] lambda (BN254): %s\n", lambda.Text(16))
+
+	l2 := new(big.Int).Mul(lambda, lambda)
+	l2.Add(l2, lambda)
+	l2.Add(l2, big.NewInt(1))
+	l2.Mod(l2, params.Q)
+	fmt.Printf("  [*] lambda^2 + lambda + 1 mod q = %s\n", l2.Text(16))
+
 }
