@@ -1,11 +1,12 @@
 package glv
 
 import (
+	"glv-multiplication/internal/ecc"
 	"math/big"
 )
 
 func FindOmega(p *big.Int) *big.Int {
-	// Euler's theorem: ω = g^((p-1)/3) is a cube root of unity
+	// Euler's theorem: w = g^((p-1)/3) is a cube root of unity
 	one := big.NewInt(1)
 	exp := new(big.Int).Sub(p, one)
 	exp.Div(exp, big.NewInt(3))
@@ -22,12 +23,12 @@ func FindOmega(p *big.Int) *big.Int {
 			}
 		}
 	}
-	panic("No valid ω found (cube root of 1 ≠ 1)")
+	panic("No valid w found (cube root of 1 ≠ 1)")
 }
 
 func FindLambdaBN254(q *big.Int) *big.Int {
 	one := big.NewInt(1)
-	// λ = (-1 + sqrt(-3))/2 mod q
+	// lambda = (-1 + sqrt(-3))/2 mod q
 	negOne := new(big.Int).Neg(one)
 	negOne.Mod(negOne, q)
 
@@ -124,4 +125,58 @@ func DecomposeAlpha(alpha, lambda, q *big.Int) (*big.Int, *big.Int) {
 	alpha2.Neg(alpha2)
 
 	return alpha1, alpha2
+}
+
+func SimultaneousMult(k1, k2 *big.Int, P1, P2 *ecc.Point, w int, params *ecc.CurveParams) *ecc.Point {
+	// 1. Попередньо обчислити всі i*P1 + j*P2 для i, j ∈ [0, 2^w)
+	table := make(map[[2]int]*ecc.Point)
+	for i := 0; i < (1 << w); i++ {
+		for j := 0; j < (1 << w); j++ {
+			if i == 0 && j == 0 {
+				continue
+			}
+			pi := ecc.ScalarMult(big.NewInt(int64(i)), P1, params)
+			pj := ecc.ScalarMult(big.NewInt(int64(j)), P2, params)
+			table[[2]int{i, j}] = ecc.AddPoints(pi, pj, params)
+		}
+	}
+
+	// 2. Розбити k1, k2 на блоки довжини w
+	bits := func(k *big.Int, w int) []int {
+		res := []int{}
+		kk := new(big.Int).Set(k)
+		mask := big.NewInt(int64((1 << w) - 1))
+		for kk.Sign() > 0 {
+			res = append(res, int(new(big.Int).And(kk, mask).Int64()))
+			kk.Rsh(kk, uint(w))
+		}
+		return res
+	}
+	K := bits(k1, w)
+	L := bits(k2, w)
+	d := len(K)
+	if len(L) > d {
+		d = len(L)
+	}
+
+	// 3. Основний цикл
+	R := ecc.NewInfinity()
+	for i := d - 1; i >= 0; i-- {
+		// 4.1 R ← 2^w R
+		for j := 0; j < w; j++ {
+			R = ecc.DoublePoint(R, params)
+		}
+		// 4.2 R ← R + (Ki*P1 + Li*P2)
+		ki, li := 0, 0
+		if i < len(K) {
+			ki = K[i]
+		}
+		if i < len(L) {
+			li = L[i]
+		}
+		if ki != 0 || li != 0 {
+			R = ecc.AddPoints(R, table[[2]int{ki, li}], params)
+		}
+	}
+	return R
 }

@@ -141,4 +141,49 @@ func main() {
 		fmt.Printf("      a2:    %s\n", alpha2.String())
 		fmt.Printf("      check: %s\n", reconstructed.String())
 	}
+
+	//Test SimultaneousMult
+
+	w := 3
+
+	// [alpha1]G1 + [alpha2]G1 = [alpha1+alpha2]G1
+	res1 := glv.SimultaneousMult(alpha1, alpha2, g1, g1, w, params)
+	expected := ecc.ScalarMult(new(big.Int).Add(alpha1, alpha2), g1, params)
+	if res1.IsEqual(expected) {
+		fmt.Println("  [+] [a1]G1 + [a2]G1 == [a1+a2]G1: OK")
+	} else {
+		fmt.Println("  [-] [a1]G1 + [a2]G1 != [a1+a2]G1: FAIL")
+	}
+
+	// [alpha1]G1 + [0]G1 = [alpha1]G1
+	res2 := glv.SimultaneousMult(alpha1, big.NewInt(0), g1, g1, w, params)
+	expected2 := ecc.ScalarMult(alpha1, g1, params)
+	if res2.IsEqual(expected2) {
+		fmt.Println("  [+] [a1]G1 + [0]G1 == [a1]G1: OK")
+	} else {
+		fmt.Println("  [-] [a1]G1 + [0]G1 != [a1]G1: FAIL")
+	}
+
+	// [0]G1 + [alpha2]G1 = alpha2]G1
+	res3 := glv.SimultaneousMult(big.NewInt(0), alpha2, g1, g1, w, params)
+	expected3 := ecc.ScalarMult(alpha2, g1, params)
+	if res3.IsEqual(expected3) {
+		fmt.Println("  [+] [0]G1 + [a2]G1 == [a2]G1: OK")
+	} else {
+		fmt.Println("  [-] [0]G1 + [a2]G1 != [a2]G1: FAIL")
+	}
+
+	// [alpha1]G1 + [alpha2]phi(G1) is simple with standart method
+
+	res4 := glv.SimultaneousMult(alpha1, alpha2, g1, phiG1, w, params)
+	expected4 := ecc.AddPoints(
+		ecc.ScalarMult(alpha1, g1, params),
+		ecc.ScalarMult(alpha2, phiG1, params),
+		params,
+	)
+	if res4.IsEqual(expected4) {
+		fmt.Println("  [+] [a1]G1 + [a2]phi(G1) == AddPoints OK")
+	} else {
+		fmt.Println("  [-] [a1]G1 + [a2]phi(G1) != AddPoints: FAIL")
+	}
 }

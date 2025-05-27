@@ -121,3 +121,8 @@ func ScalarMult(k *big.Int, P *Point, params *CurveParams) *Point {
 	}
 	return result
 }
+
+// create inf point
+func NewInfinity() *Point {
+	return NewPoint(nil, nil)
+}
