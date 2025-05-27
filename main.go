@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"glv-multiplication/internal/ecc"
+	"glv-multiplication/internal/glv"
 )
 
 func main() {
@@ -90,5 +91,26 @@ func main() {
 		fmt.Println("  [-] ScalarMult ([0]G1) is NOT point at infinity!")
 	}
 	fmt.Println()
+
+	omega := glv.FindOmega(params.P)
+	fmt.Printf("(nontrivial cube root of 1 mod p): %s\n", omega.Text(16))
+
+	// Test phi(G1) = (omega * x, y)
+	phiG1 := ecc.NewPoint(
+		ecc.FieldMul(g1.X, omega, params.P),
+		g1.Y,
+	)
+
+	// Test is phi(G1) on the curve
+	phiYSq := ecc.FieldMul(phiG1.Y, phiG1.Y, params.P)
+	phiXCubed := ecc.FieldMul(phiG1.X, phiG1.X, params.P)
+	phiXCubed = ecc.FieldMul(phiXCubed, phiG1.X, params.P)
+	phiXCubedPlusB := ecc.FieldAdd(phiXCubed, params.B, params.P)
+
+	if phiYSq.Cmp(phiXCubedPlusB) == 0 {
+		fmt.Println("  [+] phi(G1) is on the curve.")
+	} else {
+		fmt.Println("  [-] phi(G1) is NOT on the curve!")
+	}
 
 }
