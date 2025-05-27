@@ -4,9 +4,7 @@ This project implements the [(GLV)] scalar multiplication algorithm for elliptic
 
 ## Features
 
-- **Elliptic Curve Arithmetic:** Basic operations (addition, doubling, negation, scalar multiplication) over the BN254 curve:  
-   y² = x³ + 3
-  over a large prime field $\mathbb{F}_p$.
+- **Elliptic Curve Arithmetic:** Basic operations (addition, doubling, negation, scalar multiplication) over the BN254 curve:  y² = x³ + 3 over a large prime field $\mathbb{F}_p$.
 - **GLV Endomorphism:** Efficient scalar multiplication using the GLV method, including:
   - Endomorphism search (ω)
   - Eigenvalue search (λ)
